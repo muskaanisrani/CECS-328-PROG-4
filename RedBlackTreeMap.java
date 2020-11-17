@@ -1,4 +1,5 @@
 
+
 import java.util.*;
 
 // A Map ADT structure using a red-black tree, where keys must implement
@@ -88,29 +89,28 @@ public class RedBlackTreeMap<TKey extends Comparable<TKey>, TValue> {
 					//uncle & parent painted black; grandparent painted red
 	                uncle.mIsRed = false;
 	                n.mParent.mIsRed = false;
-	                grandparent.mIsRed = true;
-
-	                //recursively fix these colors
+	                n.mParent.mParent.mIsRed = true;
 	                checkBalance(uncle.mParent);
 				} else {
-					if (n.mParent == grandparent.mLeft && n == n.mParent.mRight) {
+					if (n.mParent == n.mParent.mParent.mLeft) {
 						// case 4: n is lr or rl grandchild of G
+						if ( n == n.mParent.mRight) {
 						singleRotateLeft(n.mParent);
-						n = grandparent.mLeft.mLeft;
-						
+						n = n.mParent.mParent.mLeft.mLeft;
+					}
 						//case 5:
-						singleRotateRight(grandparent);
+						singleRotateRight(n.mParent.mParent);
 						n.mParent.mIsRed = false;
-						grandparent.mIsRed = true;
+						n.mParent.mParent.mIsRed = true;
 
 					} else {
 						//n is ll grandchild of G
-							if (n.mParent == getGrandparent(n).mLeft && n == n.mParent.mLeft) {
+							if (n == n.mParent.mLeft) {
 								
 								 singleRotateRight(n.mParent);
-			                        n = grandparent.mRight.mRight;
-			                        
-			                        singleRotateLeft(grandparent);
+			                        n = n.mParent.mParent.mRight.mRight;
+							}  
+			                        singleRotateLeft(n.mParent.mParent);
 			                        n.mParent.mIsRed = false;
 			                        grandparent.mIsRed = true;
 
@@ -124,8 +124,8 @@ public class RedBlackTreeMap<TKey extends Comparable<TKey>, TValue> {
 
 		// handle additional insert cases here.
 
-	}
-
+	
+	
 	// Returns true if the given key is in the tree.
 	public boolean containsKey(TKey key) {
 		// TODO: using at most three lines of code, finish this method.
@@ -147,7 +147,7 @@ public class RedBlackTreeMap<TKey extends Comparable<TKey>, TValue> {
     
 	private void printStructure(Node temp) {
 		if (temp==null || temp.equals(NIL_NODE)) {
-			System.out.println();
+			return;
 		} else {
 			System.out.println(temp);
 		}
@@ -155,27 +155,20 @@ public class RedBlackTreeMap<TKey extends Comparable<TKey>, TValue> {
 		printStructure(temp.mRight);
 	}
 	
+	
 	// Retuns the Node containing the given key. Recursive.
 	private Node bstFind(TKey key, Node currentNode) {
 		// TODO: write this method. Given a key to find and a node to start at,
 		// proceed left/right from the current node until finding a node whose
 		// key is equal to the given key.
-		if (mRoot!=null) {
-			if (currentNode.mKey.equals(key)) {
-				return currentNode;
-			} else {
-				if (currentNode.mLeft != null) {
-					return bstFind(key, currentNode.mLeft);
-				} else {
-					if (currentNode.mRight != null) {
-						return bstFind(key, currentNode.mRight);
-					}
-				}
+		if (currentNode.mKey==key || currentNode == null) {
+			return currentNode;
+		} 
+			if (currentNode.mKey != key) {
+				return bstFind(key, currentNode.mRight);
 			}
-		}
-		return null;
+			return bstFind(key, currentNode.mLeft);
 	}
-
 
 
 	//////////////// These functions are needed for insertion cases.
@@ -232,7 +225,9 @@ public class RedBlackTreeMap<TKey extends Comparable<TKey>, TValue> {
 	private void singleRotateLeft(Node n) {
 		// TODO: do a single left rotation (AVL tree calls this a "rr" rotation)
 		// at n.
-		Node r = n.mRight, rl = r.mLeft, p = n.mParent;
+		Node r = n.mRight;
+		Node rl = r.mLeft;
+		Node p = n.mParent;
 		n.mRight = rl;
 		rl.mParent = n;
 		r.mLeft = n;
